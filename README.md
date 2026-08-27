@@ -96,9 +96,9 @@ It is not currently intended to be used as a production application.
 
 This prototype represents an initial exploration of the Vanvani concept.
 
-A future full-scale implementation could potentially include a proper database, audio recording and playback, community contributions, searchable language resources, learning tools, translation features, and other functionality for documenting and engaging with tribal languages.
+Vanvani could be developed in several directions depending on its intended audience and purpose. It could evolve into a full-fledged language-learning platform, a school-based educational and awareness tool, or a narrative-driven role-playing game where users learn languages through interactive stories, levels, and indigenous folklore. It could also incorporate multimedia resources such as audio, cultural stories, pronunciation, and visual learning tools.
 
-Such an implementation would require further research and technical development, as well as careful consideration of community participation, consent, cultural sensitivity, and the ethical handling of linguistic and cultural resources.
+A larger implementation would require further research and technical development, along with meaningful collaboration with the respective communities to ensure linguistic accuracy, cultural sensitivity, informed participation, and responsible use of cultural and linguistic resources.
 
 ---
 
