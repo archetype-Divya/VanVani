@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌿 VanVani — India's Indigenous Languages</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Nunito:wght@400;600;700;800&family=Noto+Sans+Ol+Chiki:wght@400;700&family=Noto+Sans+Masaram+Gondi&family=Noto+Sans+Warang+Citi&family=Noto+Sans+Nag+Mundari&display=swap" rel="stylesheet">
+
+<!-- ════════════════════════════════════════════════════════════
+  VanVani — Colour & Font Reference
+  ─────────────────────────────────────────────────────────────
+  COLOURS
+  Page background ........... #fef9f0  (--sky)
+  Jungle dark ............... #1a4a2e  (--jungle)
+  Leaf green ................ #2d7a4f  (--leaf)
+  Mint accent ............... #4eca82  (--mint)
+  Sun gold .................. #ffb830  (--sun)
+  Coral ..................... #ff6b6b  (--coral)
+  Lavender .................. #9b6dff  (--lav)
+  Text primary .............. #1a2332
+  Text secondary ............ #64748b
+  Card white ................ #ffffff
+  Side-panel bg ............. #0f1f14
+  Side-panel surface ........ #1a2e1e
+  Side-panel border ......... #2d4a33
+
+  SCRIPT-CHART ACCENTS
+  Ol Chiki .................. bg #1a0533  fg #e9d5ff  accent #6a1b9a
+  Masaram Gondi ............. bg #1c0a00  fg #fde68a  accent #b45309
+  Mundari Bani .............. bg #00172b  fg #bae6fd  accent #0369a1
+  Warang Citi ............... bg #001a10  fg #6ee7b7  accent #065f46
+  Tolong Siki ............... bg #1f0010  fg #fda4af  accent #9f1239
+
+  FONTS
+  Display / headings ........ Baloo 2 — weights 600 700 800
+  Body / UI ................. Nunito  — weights 400 600 700 800
+  Ol Chiki .................. Noto Sans Ol Chiki
+  Masaram Gondi ............. Noto Sans Masaram Gondi
+  Mundari Bani .............. Noto Sans Nag Mundari
+  Warang Citi ............... Noto Sans Warang Citi
+  Tolong Siki ............... Noto Sans (system fallback)
+════════════════════════════════════════════════════════════ -->
+
+<style>
+
+/* ── TOKENS ─────────────────────────────────────────────────────── */
+:root{
+  --jungle:#1a4a2e; --leaf:#2d7a4f; --mint:#4eca82;
+  --sky:#fef9f0;    --sun:#ffb830;  --coral:#ff6b6b;
+  --lav:#9b6dff;    --text:#1a2332; --muted:#64748b;
+  --card:#ffffff;
+  --panel-bg:#0f1f14; --panel-surf:#1a2e1e; --panel-border:#2d4a33;
+  --xl:26px; --lg:18px; --md:12px;
+  --shadow-card:0 6px 32px rgba(0,0,0,.09),0 0 0 1px rgba(0,0,0,.04);
+  --shadow-panel:0 8px 40px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--sky);
+  min-height:100vh;overflow-x:hidden;color:var(--text);}
+
+/* ══════════════════════════════════════════════════════════════
+   SPLASH SCREEN
+══════════════════════════════════════════════════════════════ */
+#splash{
+  position:fixed;inset:0;z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  overflow:hidden;
+  /* curtain splits into two panels */
+}
+
+/* Left and right curtain halves */
+.curtain-half{
+  position:absolute;top:0;bottom:0;width:51%;  /* slight overlap so no gap */
+  background:var(--jungle);
+  transition:transform 1.1s cubic-bezier(.77,0,.18,1);
+  z-index:2;
+}
+.curtain-half.left{ left:0; transform-origin:left center; }
+.curtain-half.right{ right:0; transform-origin:right center; }
+
+/* Curtain texture — vertical stripes */
+.curtain-half::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    transparent 18px,
+    rgba(255,255,255,.04) 18px,
+    rgba(255,255,255,.04) 20px
+  );
+}
+/* Curtain sheen */
+.curtain-half.left::after{
+  content:'';position:absolute;top:0;right:0;bottom:0;width:30px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.08));
+}
+.curtain-half.right::after{
+  content:'';position:absolute;top:0;left:0;bottom:0;width:30px;
+  background:linear-gradient(90deg,rgba(255,255,255,.08),transparent);
+}
+
+/* Open state — curtains slide out */
+#splash.open .curtain-half.left { transform:translateX(-100%); }
+#splash.open .curtain-half.right{ transform:translateX(100%); }
+
+/* Splash content — sits between curtains, z-index 3 */
+.splash-content{
+  position:relative;z-index:3;
+  display:flex;flex-direction:column;align-items:center;gap:0;
+  text-align:center;pointer-events:none;
+}
+
+/* Animated leaves floating around */
+.splash-floats{
+  position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1;
+}
+.sf{
+  position:absolute;font-size:22px;opacity:0;
+  animation:sfloat 6s ease-in-out infinite;
+}
+@keyframes sfloat{
+  0%  {opacity:0;transform:translateY(60px) rotate(-10deg);}
+  15% {opacity:.25;}
+  85% {opacity:.18;}
+  100%{opacity:0;transform:translateY(-80px) rotate(15deg);}
+}
+
+/* Logo bounce-in */
+.splash-logo{
+  font-family:'Baloo 2',cursive;
+  font-size:clamp(52px,10vw,88px);
+  font-weight:800;
+  background:linear-gradient(135deg,#a7f3d0 0%,#4eca82 40%,#ffb830 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  opacity:0;
+  transform:scale(.6) translateY(30px);
+  animation:logoIn .8s .35s cubic-bezier(.34,1.56,.64,1) forwards;
+  line-height:1;
+}
+@keyframes logoIn{
+  to{opacity:1;transform:scale(1) translateY(0);}
+}
+
+.splash-leaf-l,
+.splash-leaf-r{
+  font-size:clamp(28px,5vw,44px);
+  opacity:0;
+  animation:leafIn .7s .55s cubic-bezier(.34,1.56,.64,1) forwards;
+  display:inline-block;
+}
+.splash-leaf-r{ animation-delay:.65s; }
+@keyframes leafIn{
+  from{opacity:0;transform:scale(.3) rotate(-30deg);}
+  to  {opacity:1;transform:scale(1)  rotate(0deg);}
+}
+
+.splash-tagline{
+  font-family:'Nunito',sans-serif;
+  font-size:clamp(13px,2vw,18px);
+  font-weight:600;
+  color:rgba(167,243,208,.75);
+  opacity:0;
+  transform:translateY(12px);
+  animation:tagIn .6s .85s ease forwards;
+  margin-top:10px;letter-spacing:.3px;
+}
+@keyframes tagIn{
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* Tribal script sampler — scrolls through scripts */
+.splash-scripts{
+  display:flex;gap:18px;align-items:center;justify-content:center;
+  flex-wrap:wrap;margin-top:20px;
+  opacity:0;
+  animation:tagIn .6s 1.1s ease forwards;
+}
+.ss-chip{
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(167,243,208,.2);
+  border-radius:30px;
+  padding:5px 14px;
+  font-size:18px;color:rgba(167,243,208,.9);
+  letter-spacing:.05em;
+}
+.ss-chip small{
+  display:block;font-family:'Nunito',sans-serif;
+  font-size:9px;font-weight:700;
+  color:rgba(167,243,208,.5);
+  text-transform:uppercase;letter-spacing:1px;
+  margin-top:1px;
+}
+
+/* Enter button */
+.splash-enter{
+  margin-top:28px;
+  padding:14px 38px;
+  border-radius:40px;
+  border:none;
+  background:linear-gradient(135deg,#4eca82,#2d7a4f);
+  color:#fff;
+  font-family:'Baloo 2',cursive;
+  font-size:18px;font-weight:700;
+  cursor:pointer;
+  letter-spacing:.5px;
+  box-shadow:0 6px 28px rgba(78,202,130,.45);
+  opacity:0;
+  transform:translateY(16px) scale(.95);
+  animation:btnIn .6s 1.3s cubic-bezier(.34,1.56,.64,1) forwards;
+  transition:transform .18s,box-shadow .18s;
+  pointer-events:all;
+  position:relative;z-index:4;
+}
+@keyframes btnIn{
+  to{opacity:1;transform:translateY(0) scale(1);}
+}
+.splash-enter:hover{
+  transform:translateY(-3px) scale(1.05);
+  box-shadow:0 10px 36px rgba(78,202,130,.6);
+}
+.splash-enter:active{ transform:scale(.97); }
+
+/* Pulse ring around button */
+.splash-enter::after{
+  content:'';
+  position:absolute;inset:-6px;
+  border-radius:46px;
+  border:2px solid rgba(78,202,130,.4);
+  animation:pulse 2s 1.8s ease-out infinite;
+}
+@keyframes pulse{
+  0%  {transform:scale(1);opacity:.8;}
+  100%{transform:scale(1.18);opacity:0;}
+}
+
+/* fade-out the whole splash */
+#splash.hiding{
+  animation:splashOut .7s ease forwards;
+}
+@keyframes splashOut{
+  to{opacity:0;pointer-events:none;}
+}
+
+/* ── AMBIENT BG ─────────────────────────────────────────────────── */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 55% 38% at 8% 18%,#d4f5e4 0%,transparent 60%),
+    radial-gradient(ellipse 45% 45% at 92% 82%,#fff3c4 0%,transparent 55%),
+    radial-gradient(ellipse 38% 28% at 50% 50%,#ffe8f0 0%,transparent 60%),
+    var(--sky);}
+.floaty{position:fixed;z-index:0;pointer-events:none;font-size:26px;
+  opacity:.14;animation:floatAround linear infinite;}
+@keyframes floatAround{
+  0%{transform:translateY(0) rotate(0)}
+  50%{transform:translateY(-20px) rotate(7deg)}
+  100%{transform:translateY(0) rotate(0)}}
+
+/* ── PAGE WRAPPER ───────────────────────────────────────────────── */
+.page{position:relative;z-index:1;max-width:1260px;margin:0 auto;padding:0 20px 60px;}
+
+/* ══ LEVEL 1 — NAME ═════════════════════════════════════════════ */
+.header{text-align:center;padding:28px 20px 6px;animation:slideDown .7s cubic-bezier(.34,1.56,.64,1);}
+@keyframes slideDown{from{opacity:0;transform:translateY(-28px)}to{opacity:1;transform:translateY(0)}}
+.logo-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:5px;}
+.logo-leaf{font-size:36px;animation:sway 4s ease-in-out infinite;}
+@keyframes sway{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+.header h1{
+  font-family:'Baloo 2',cursive;font-size:clamp(36px,7vw,64px);font-weight:800;line-height:1;
+  background:linear-gradient(135deg,var(--jungle) 0%,var(--leaf) 45%,var(--mint) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+/* ══ LEVEL 2 — TAGLINE ══════════════════════════════════════════ */
+.tagline{font-size:clamp(13px,1.8vw,16px);color:var(--muted);
+  max-width:520px;margin:0 auto 20px;line-height:1.6;text-align:center;}
+
+/* ══ LEVEL 3 — LANGUAGE SETTINGS ═══════════════════════════════ */
+.lang-bar{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  flex-wrap:wrap;margin-bottom:14px;animation:fadeUp .5s .1s both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.sel-group{
+  display:flex;align-items:center;gap:8px;background:var(--card);
+  border-radius:var(--md);padding:9px 16px;
+  box-shadow:0 2px 12px rgba(0,0,0,.07),0 0 0 1.5px rgba(45,122,79,.14);}
+.sel-group label{font-weight:700;font-size:12px;color:var(--muted);white-space:nowrap;}
+.sel-group select{border:none;outline:none;background:transparent;
+  font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;
+  color:var(--jungle);cursor:pointer;}
+.lang-arrow{font-size:20px;color:var(--mint);font-weight:900;flex-shrink:0;}
+
+/* ══ LEVEL 4 — SCRIPT CHART BUTTONS ════════════════════════════ */
+.charts-bar{
+  display:flex;flex-wrap:wrap;gap:7px;justify-content:center;
+  margin-bottom:16px;animation:fadeUp .5s .15s both;}
+.charts-label{font-size:11px;font-weight:800;color:var(--muted);
+  align-self:center;letter-spacing:.5px;text-transform:uppercase;margin-right:4px;}
+.sbtn{border:none;border-radius:var(--md);padding:8px 14px;font-family:'Nunito',sans-serif;
+  font-size:11px;font-weight:800;cursor:pointer;letter-spacing:.3px;white-space:nowrap;
+  transition:transform .15s,box-shadow .15s;}
+.sbtn:hover{transform:translateY(-2px);}
+.sbtn:active{transform:translateY(0);}
+.s-oc{background:linear-gradient(135deg,#6a0dad,#9b6dff);color:#fff;box-shadow:0 3px 10px rgba(155,109,255,.4);}
+.s-mg{background:linear-gradient(135deg,#92400e,#f59e0b);color:#fff;box-shadow:0 3px 10px rgba(245,158,11,.4);}
+.s-mb{background:linear-gradient(135deg,#0369a1,#38bdf8);color:#fff;box-shadow:0 3px 10px rgba(56,189,248,.4);}
+.s-wc{background:linear-gradient(135deg,#065f46,#34d399);color:#fff;box-shadow:0 3px 10px rgba(52,211,153,.4);}
+.s-ts{background:linear-gradient(135deg,#9f1239,#fb7185);color:#fff;box-shadow:0 3px 10px rgba(251,113,133,.4);}
+
+/* ══ LEVEL 5 — CATEGORY PILLS ══════════════════════════════════ */
+.cat-row{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;
+  margin-bottom:20px;animation:fadeUp .5s .2s both;}
+.cpill{padding:6px 15px;border-radius:30px;font-size:11px;font-weight:800;cursor:pointer;
+  border:2px solid transparent;background:var(--card);color:var(--muted);
+  box-shadow:0 2px 8px rgba(0,0,0,.06);user-select:none;
+  transition:all .2s cubic-bezier(.34,1.56,.64,1);}
+.cpill:hover{transform:translateY(-2px) scale(1.04);}
+.cpill.active{color:#fff;transform:translateY(-2px) scale(1.06);}
+
+/* ══ LEVEL 6 — MAIN TWO-COLUMN AREA ════════════════════════════ */
+.main-area{
+  display:grid;
+  grid-template-columns:1fr 0px;   /* panel hidden by default */
+  gap:0;
+  transition:grid-template-columns .4s cubic-bezier(.34,1.1,.64,1);
+  animation:fadeUp .5s .3s both;
+  align-items:start;}
+.main-area.panel-open{
+  grid-template-columns:1fr 360px;
+  gap:16px;}
+
+/* ── WORD CARD (left) ──────────────────────────────────────────── */
+.wcard{
+  background:var(--card);border-radius:var(--xl);
+  box-shadow:var(--shadow-card);padding:28px 28px 22px;
+  text-align:center;position:relative;overflow:hidden;
+  min-height:440px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;}
+.wcard::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;
+  background:linear-gradient(90deg,var(--mint),var(--sun),var(--coral),var(--lav));
+  border-radius:var(--xl) var(--xl) 0 0;background-size:300% 100%;
+  animation:shimmer 4s linear infinite;}
+@keyframes shimmer{0%{background-position:0%}100%{background-position:300%}}
+.cat-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 12px;
+  border-radius:18px;font-size:10px;font-weight:800;text-transform:uppercase;
+  letter-spacing:1px;color:#fff;margin-bottom:10px;}
+.prog-txt{font-size:11px;color:#b0bec5;margin-bottom:6px;font-weight:600;}
+.emoji-big{font-size:clamp(52px,9vw,80px);line-height:1;margin-bottom:6px;
+  display:block;animation:popIn .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popIn{from{transform:scale(.5) rotate(-10deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+.src-word{font-family:'Baloo 2',cursive;font-size:clamp(18px,3vw,28px);font-weight:800;
+  color:var(--text);margin-bottom:3px;animation:fadeWord .35s ease;}
+@keyframes fadeWord{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.arrow-dn{font-size:18px;color:var(--mint);margin:2px 0;line-height:1;}
+.lang-tag{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;letter-spacing:.4px;}
+.native-big{font-size:clamp(32px,5.5vw,52px);font-weight:700;line-height:1.15;
+  margin-bottom:3px;animation:fadeWord .35s ease;letter-spacing:.04em;}
+.roman-small{font-size:clamp(14px,2vw,19px);font-weight:700;color:var(--muted);
+  margin-bottom:2px;}
+
+/* ══ LEVEL 7 — NAV BUTTONS ══════════════════════════════════════ */
+.nav-row{display:flex;justify-content:center;gap:9px;margin-top:22px;
+  flex-wrap:wrap;}
+.nbtn{padding:11px 20px;border-radius:var(--md);border:none;
+  font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer;
+  display:flex;align-items:center;gap:6px;
+  transition:all .2s cubic-bezier(.34,1.56,.64,1);}
+.nbtn:hover{transform:translateY(-3px) scale(1.04);}
+.nbtn:active{transform:scale(.97);}
+.n-prev{background:#f1f5f9;color:#475569;box-shadow:0 3px 10px rgba(0,0,0,.08);}
+.n-next{background:linear-gradient(135deg,var(--leaf),var(--mint));color:#fff;
+  box-shadow:0 4px 14px rgba(45,122,79,.4);}
+.n-speak{background:linear-gradient(135deg,#0369a1,#38bdf8);color:#fff;
+  box-shadow:0 4px 14px rgba(56,189,248,.4);font-size:18px;padding:10px 16px;}
+.n-quiz{background:linear-gradient(135deg,var(--coral),#ff4757);color:#fff;
+  box-shadow:0 4px 14px rgba(255,107,107,.45);}
+.n-quiz.active-quiz{
+  background:linear-gradient(135deg,#475569,#334155);
+  box-shadow:0 4px 14px rgba(0,0,0,.25);}
+
+/* ══ SIDE PANEL ═════════════════════════════════════════════════ */
+.side-panel{
+  background:var(--panel-bg);border-radius:var(--xl);
+  box-shadow:var(--shadow-panel);
+  overflow:hidden;
+  opacity:0;transform:translateX(30px);pointer-events:none;
+  transition:opacity .35s .05s ease, transform .35s .05s cubic-bezier(.34,1.1,.64,1);}
+.main-area.panel-open .side-panel{
+  opacity:1;transform:translateX(0);pointer-events:all;}
+
+/* panel close button */
+.panel-close{
+  position:absolute;top:14px;right:14px;
+  background:rgba(255,255,255,.1);border:none;border-radius:50%;
+  width:30px;height:30px;color:#fff;font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s;}
+.panel-close:hover{background:rgba(255,255,255,.2);}
+
+/* ── QUIZ SECTION (inside panel) ───────────────────────────────── */
+.quiz-section{
+  padding:20px 20px 0;position:relative;}
+.panel-section-title{
+  font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;
+  color:#a7f3d0;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.q-question{font-size:13px;color:#d1fae5;font-weight:700;
+  margin-bottom:4px;line-height:1.5;}
+.q-emoji{font-size:44px;display:block;margin:6px 0;text-align:center;
+  animation:popIn .4s cubic-bezier(.34,1.56,.64,1);}
+.qopts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+.qopt{padding:12px 6px;border-radius:var(--md);border:2px solid rgba(255,255,255,.15);
+  background:var(--panel-surf);font-size:18px;font-weight:700;cursor:pointer;
+  color:#e2e8f0;line-height:1.3;min-height:58px;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;
+  transition:all .18s cubic-bezier(.34,1.56,.64,1);}
+.qopt .qopt-native{font-size:20px;line-height:1.2;}
+.qopt .qopt-roman{font-size:10px;color:#94a3b8;font-weight:700;}
+.qopt:hover:not(:disabled){border-color:var(--mint);background:#1e3a28;transform:scale(1.04);}
+.qopt.correct{background:#14532d;border-color:#4eca82;color:#a7f3d0;}
+.qopt.wrong  {background:#450a0a;border-color:#ff6b6b;color:#fca5a5;}
+.qopt:disabled{cursor:default;}
+.qresult{font-family:'Baloo 2',cursive;font-size:17px;font-weight:800;
+  margin-top:12px;min-height:24px;text-align:center;}
+.qresult.win{color:#4eca82;}.qresult.lose{color:#ff6b6b;}
+.qactions{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap;
+  padding-bottom:16px;}
+.qbtn{padding:9px 18px;border-radius:var(--md);border:none;font-family:'Nunito',sans-serif;
+  font-size:12px;font-weight:800;cursor:pointer;transition:all .2s;}
+.qbtn-close{background:rgba(255,255,255,.1);color:#cbd5e1;}
+.qbtn-close:hover{background:rgba(255,255,255,.18);}
+.qbtn-next{background:linear-gradient(135deg,var(--leaf),var(--mint));color:#fff;
+  box-shadow:0 3px 10px rgba(45,122,79,.4);}
+.qbtn-next:hover{transform:translateY(-2px);}
+
+/* panel divider */
+.panel-divider{height:1px;background:var(--panel-border);margin:0 20px;}
+
+/* ── SCOREBOARD (inside panel) ─────────────────────────────────── */
+.score-section{padding:16px 20px 20px;}
+.score-top{display:flex;align-items:flex-end;gap:12px;margin-bottom:10px;}
+.score-num-big{font-family:'Baloo 2',cursive;font-size:52px;font-weight:800;
+  color:#4eca82;line-height:1;}
+.score-label-col{display:flex;flex-direction:column;gap:2px;}
+.score-label{font-size:11px;color:#6ee7b7;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.score-sub{font-size:12px;color:#94a3b8;font-weight:600;}
+.pbar-out{background:rgba(255,255,255,.12);border-radius:10px;height:7px;margin-bottom:8px;}
+.pbar-in{height:7px;border-radius:10px;background:var(--sun);transition:width .6s ease;}
+.prog-detail{font-size:11px;color:#6b7280;font-weight:600;display:flex;justify-content:space-between;}
+
+/* ── LANG INFO (inside panel) ──────────────────────────────────── */
+.info-section{padding:0 20px 20px;}
+.info-item{font-size:12px;color:#94a3b8;font-weight:600;line-height:1.7;}
+.info-item span{color:#a7f3d0;font-weight:700;}
+
+/* ── CATEGORY LEGEND (inside panel) ────────────────────────────── */
+.legend-section{padding:0 20px 20px;}
+.legend-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#94a3b8;font-weight:600;}
+.legend-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+
+/* ── SCRIPT CHART MODAL ─────────────────────────────────────────── */
+.overlay{position:fixed;inset:0;z-index:200;background:rgba(10,20,35,.75);
+  backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;
+  padding:16px;opacity:0;pointer-events:none;transition:opacity .25s;}
+.overlay.on{opacity:1;pointer-events:all;}
+.cmodal{border-radius:var(--xl);padding:28px 24px;max-width:820px;width:100%;
+  box-shadow:0 30px 80px rgba(0,0,0,.55);transform:scale(.9);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);max-height:88vh;overflow-y:auto;text-align:center;}
+.overlay.on .cmodal{transform:scale(1);}
+.cmodal h2{font-family:'Baloo 2',cursive;font-size:22px;font-weight:800;margin-bottom:4px;}
+.cmodal .csub{font-size:11px;opacity:.7;margin-bottom:16px;line-height:1.7;}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px;margin-bottom:18px;}
+.ccell{border-radius:var(--md);padding:9px 4px;text-align:center;cursor:default;
+  transition:transform .18s;}
+.ccell:hover{transform:scale(1.07);}
+.cc-char{font-size:26px;font-weight:700;line-height:1.2;}
+.cc-name{font-size:9px;font-weight:700;margin-top:1px;}
+.cc-ipa{font-size:9px;font-style:italic;}
+.cex-wrap{padding-top:12px;border-top:1px solid rgba(255,255,255,.18);}
+.cex-wrap h3{font-family:'Baloo 2',cursive;font-size:14px;font-weight:800;margin-bottom:9px;}
+.cex-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;}
+.cex-card{border-radius:var(--md);padding:8px 12px;min-width:80px;}
+.cbtn{margin-top:16px;padding:9px 24px;border-radius:var(--md);border:none;
+  font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;}
+
+/* ── FOOTER ─────────────────────────────────────────────────────── */
+.footer{text-align:center;padding:28px 20px 8px;font-size:12px;color:#94a3b8;
+  font-weight:600;animation:fadeUp .5s .5s both;}
+.footer strong{color:var(--leaf);}
+
+/* ── ANIMATIONS ─────────────────────────────────────────────────── */
+.flip-enter{animation:flipIn .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes flipIn{from{transform:rotateY(40deg) scale(.95);opacity:.6}to{transform:rotateY(0) scale(1);opacity:1}}
+
+/* ── RESPONSIVE ─────────────────────────────────────────────────── */
+@media(max-width:800px){
+  .main-area,.main-area.panel-open{grid-template-columns:1fr;}
+  .side-panel{transform:none!important;}
+  .main-area.panel-open .side-panel{display:block;}
+}
+
+</style>
+</head>
+<body>
+<!-- ══════════════════════════════════════════════════════════════
+     SPLASH SCREEN — removed from DOM after curtain reveal
+══════════════════════════════════════════════════════════════ -->
+<div id="splash">
+
+  <!-- floating ambient leaves -->
+  <div class="splash-floats">
+    <span class="sf" style="left:8%;animation-delay:0s;animation-duration:7s">🌿</span>
+    <span class="sf" style="left:22%;animation-delay:1.2s;animation-duration:6s">🌸</span>
+    <span class="sf" style="left:38%;animation-delay:0.4s;animation-duration:8s">🍃</span>
+    <span class="sf" style="left:55%;animation-delay:2s;animation-duration:6.5s">🌺</span>
+    <span class="sf" style="left:70%;animation-delay:0.8s;animation-duration:7.5s">🦋</span>
+    <span class="sf" style="left:85%;animation-delay:1.6s;animation-duration:6s">🌿</span>
+    <span class="sf" style="left:14%;animation-delay:3s;animation-duration:9s">🌸</span>
+    <span class="sf" style="left:62%;animation-delay:2.5s;animation-duration:7s">🍃</span>
+  </div>
+
+  <!-- curtain halves -->
+  <div class="curtain-half left"></div>
+  <div class="curtain-half right"></div>
+
+  <!-- centred content -->
+  <div class="splash-content">
+
+    <!-- logo row -->
+    <div style="display:flex;align-items:center;gap:14px;">
+      <span class="splash-leaf-l">🌿</span>
+      <span class="splash-logo">VanVani</span>
+      <span class="splash-leaf-r">🌿</span>
+    </div>
+
+    <!-- tagline -->
+    <p class="splash-tagline">India's Indigenous Languages · In Their Own Scripts</p>
+
+    <!-- script sampler -->
+    <div class="splash-scripts">
+      <div class="ss-chip">ᱫᱟ<small>Santali</small></div>
+      <div class="ss-chip">𑴜𑴝𑴕<small>Gondi</small></div>
+      <div class="ss-chip">ᱡᱳᱢ<small>Mundari</small></div>
+      <div class="ss-chip">𑣤𑣉<small>Ho</small></div>
+      <div class="ss-chip">𑤯𑤲𑤬<small>Kurukh</small></div>
+    </div>
+
+    <!-- enter button -->
+    <button class="splash-enter" onclick="launchApp()">
+      Enter VanVani &nbsp;→
+    </button>
+
+  </div>
+</div>
+<!-- /splash -->
+
+<div class="bg"></div>
+<div class="floaty" style="top:7%;left:3%;animation-duration:6s">🌿</div>
+<div class="floaty" style="top:17%;right:4%;animation-duration:7.5s;animation-delay:1s">🌸</div>
+<div class="floaty" style="top:55%;left:1.5%;animation-duration:8s;animation-delay:2s">🦋</div>
+<div class="floaty" style="top:75%;right:2%;animation-duration:6.5s;animation-delay:.5s">🌺</div>
+<div class="floaty" style="top:40%;right:.5%;animation-duration:9s;animation-delay:3s">🍃</div>
+
+<div class="page">
+
+  <!-- L1 NAME -->
+  <header class="header">
+    <div class="logo-row">
+      <span class="logo-leaf">🌿</span>
+      <h1>VanVani</h1>
+      <span class="logo-leaf" style="animation-delay:.8s">🌿</span>
+    </div>
+  </header>
+
+  <!-- L2 TAGLINE -->
+  <p class="tagline">Discover India's indigenous languages — every word in its own script</p>
+
+  <!-- L3 LANGUAGE SETTINGS -->
+  <div class="lang-bar">
+    <div class="sel-group">
+      <label>📖 I know</label>
+      <select id="srcLang">
+        <option value="English">English</option>
+        <option value="Hindi">Hindi</option>
+        <option value="Bengali">Bengali</option>
+        <option value="Telugu">Telugu</option>
+      </select>
+    </div>
+    <span class="lang-arrow">⟶</span>
+    <div class="sel-group">
+      <label>🗣️ I'm learning</label>
+      <select id="tribLang">
+        <option value="Santali">Santali</option>
+        <option value="Gondi">Gondi</option>
+        <option value="Mundari">Mundari</option>
+        <option value="Ho">Ho</option>
+        <option value="Kurukh">Kurukh</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- L4 SCRIPT CHART BUTTONS -->
+  <div class="charts-bar">
+    <span class="charts-label">Scripts ↗</span>
+    <button class="sbtn s-oc" onclick="openChart('oc')">ᱚ Ol Chiki</button>
+    <button class="sbtn s-mg" onclick="openChart('mg')">𑴀 Masaram Gondi</button>
+    <button class="sbtn s-mb" onclick="openChart('mb')">𞓐 Mundari Bani</button>
+    <button class="sbtn s-wc" onclick="openChart('wc')">𑢠 Warang Citi</button>
+    <button class="sbtn s-ts" onclick="openChart('ts')">𑶻 Tolong Siki</button>
+  </div>
+
+  <!-- L5 CATEGORY PILLS -->
+  <div class="cat-row" id="catRow"></div>
+
+  <!-- L6 MAIN TWO-COLUMN AREA -->
+  <div class="main-area" id="mainArea">
+
+    <!-- LEFT — word teaching card -->
+    <div>
+      <div class="wcard" id="wordCard">
+        <div class="cat-tag" id="catTag"></div>
+        <div class="prog-txt" id="progTxt">Word 1 of 37</div>
+        <span class="emoji-big" id="wordEmoji">💧</span>
+        <div class="src-word" id="srcWord">Water</div>
+        <div class="arrow-dn">▼</div>
+        <div class="lang-tag" id="langTag">in Santali</div>
+        <div id="nativeDisplay"></div>
+      </div>
+
+      <!-- L7 NAVIGATION -->
+      <div class="nav-row">
+        <button class="nbtn n-prev" onclick="navigate(-1)">◀ Previous</button>
+        <button class="nbtn n-next" onclick="navigate(1)">Next ▶</button>
+        <button class="nbtn n-speak" title="Pronunciation help (coming soon)" onclick="void(0)">🗣️</button>
+        <button class="nbtn n-quiz" id="quizToggleBtn" onclick="togglePanel()">❓ Quiz Me!</button>
+      </div>
+    </div>
+
+    <!-- RIGHT — side panel (quiz + scoreboard + lang info) -->
+    <div class="side-panel" id="sidePanel">
+
+      <button class="panel-close" onclick="togglePanel()" title="Close">✕</button>
+
+      <!-- QUIZ SECTION -->
+      <div class="quiz-section">
+        <div class="panel-section-title">❓ Quiz</div>
+        <div class="q-question" id="qQuestion">Open the panel to start a quiz</div>
+        <span class="q-emoji" id="qEmoji"></span>
+        <div class="qopts" id="qOpts"></div>
+        <div class="qresult" id="qResult"></div>
+        <div class="qactions" id="qActions" style="display:none">
+          <button class="qbtn qbtn-next" onclick="quizNext()">Next Word ▶</button>
+        </div>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <!-- SCOREBOARD -->
+      <div class="score-section">
+        <div class="panel-section-title">⭐ Score</div>
+        <div class="score-top">
+          <div class="score-num-big" id="scoreNum">0</div>
+          <div class="score-label-col">
+            <span class="score-label">Points</span>
+            <span class="score-sub" id="scoreSub">Keep going!</span>
+          </div>
+        </div>
+        <div class="pbar-out"><div class="pbar-in" id="pbar" style="width:3%"></div></div>
+        <div class="prog-detail">
+          <span id="progSeen">Seen: 0</span>
+          <span id="progTotal">Total: 37</span>
+        </div>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <!-- LANGUAGE INFO -->
+      <div class="info-section">
+        <div class="panel-section-title" style="margin-bottom:8px">🏷️ Language</div>
+        <div id="infoRows"></div>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <!-- CATEGORY LEGEND -->
+      <div class="legend-section">
+        <div class="panel-section-title" style="margin-bottom:8px">🗂️ Categories</div>
+        <div class="legend-grid" id="catLegend"></div>
+      </div>
+
+    </div><!-- /side-panel -->
+  </div><!-- /main-area -->
+
+  <div class="footer">
+    <p>🌿 Preserving India's linguistic heritage through technology &nbsp;|&nbsp; <strong>VanVani</strong></p>
+    <p style="margin-top:3px;color:#6b7280">Santali · Gondi · Mundari · Ho · Kurukh</p>
+  </div>
+
+</div><!-- /page -->
+
+<!-- SCRIPT CHART MODAL -->
+<div class="overlay" id="chartOverlay">
+  <div class="cmodal" id="cModal">
+    <h2 id="cTitle"></h2>
+    <p class="csub" id="cSub"></p>
+    <div class="cgrid" id="cGrid"></div>
+    <div class="cex-wrap">
+      <h3 id="cExTitle"></h3>
+      <div class="cex-grid" id="cExGrid"></div>
+    </div>
+    <button class="cbtn" id="cCloseBtn" onclick="closeOverlay('chartOverlay')">Close</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// DATA: WORDS, ROMAN, SCRIPT_CFG, TRIBAL_INFO, CAT_CFG, CHARTS + STATE
+// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+// DATA — WORDS (7 categories × 3+ words each = 45 total)
+// ═══════════════════════════════════════════════════════════════════
+const WORDS=[
+// ── NATURE (9) ────────────────────────────────────────────────────
+{emoji:"💧",cat:"Nature",
+  English:"Water",  Hindi:"पानी",   Bengali:"জল",     Telugu:"నీళ్ళు",
+  Santali:"ᱫᱟ",     Gondi:"𑴥𑴧𑴥",   Mundari:"ᱫᱟ",    Ho:"𑣤𑣉",    Kurukh:"𑤯𑤲𑤬"},
+{emoji:"☀️",cat:"Nature",
+  English:"Sun",    Hindi:"सूरज",   Bengali:"সূর্য",  Telugu:"సూర్యుడు",
+  Santali:"ᱥᱤᱝᱤ",   Gondi:"𑴢𑴲𑴤𑴝𑴤",   Mundari:"ᱥᱤᱝᱤ",  Ho:"𑣢𑣛𑣑",  Kurukh:"𑤢𑤲𑤤𑤪𑤤"},
+{emoji:"🌙",cat:"Nature",
+  English:"Moon",   Hindi:"चाँद",   Bengali:"চাঁদ",   Telugu:"చంద్రుడు",
+  Santali:"ᱪᱚᱱᱫᱳ",  Gondi:"𑴪𑴝𑴫𑴛",  Mundari:"ᱪᱚᱱᱫᱳ", Ho:"𑣩𑣙𑣛",  Kurukh:"𑤩𑤙𑤛"},
+{emoji:"🌳",cat:"Nature",
+  English:"Tree",   Hindi:"पेड़",   Bengali:"গাছ",    Telugu:"చెట్టు",
+  Santali:"ᱫᱟᱨᱮ",   Gondi:"𑴛𑴱𑴪𑴤",    Mundari:"ᱫᱟᱨᱮ",  Ho:"𑣛𑣉𑣧𑣙", Kurukh:"𑤛𑤉𑤧𑤙"},
+{emoji:"🌊",cat:"Nature",
+  English:"River",  Hindi:"नदी",    Bengali:"নদী",    Telugu:"నది",
+  Santali:"ᱱᱟᱫᱤ",   Gondi:"𑴥𑴘𑴛𑴦",    Mundari:"ᱱᱟᱫᱤ",  Ho:"𑣧𑣉𑣛𑣤", Kurukh:"𑤧𑤙𑤛𑤤"},
+{emoji:"🔥",cat:"Nature",
+  English:"Fire",   Hindi:"आग",     Bengali:"আগুন",   Telugu:"అగ్ని",
+  Santali:"ᱥᱮᱝᱮᱞ",  Gondi:"𑴜𑴝𑴕",     Mundari:"ᱥᱮᱝᱮᱞ", Ho:"𑣢𑣙𑣑",  Kurukh:"𑤜𑤙𑤕"},
+{emoji:"🌱",cat:"Nature",
+  English:"Earth",  Hindi:"धरती",   Bengali:"মাটি",   Telugu:"భూమి",
+  Santali:"ᱫᱷᱟᱨᱴᱤ", Gondi:"𑴛𑴱𑴤𑴬𑴤",    Mundari:"ᱫᱷᱟᱨᱴᱤ",Ho:"𑣛𑣱𑣤𑣬𑣤", Kurukh:"𑤛𑤱𑤤𑤬𑤤"},
+{emoji:"🌬️",cat:"Nature",
+  English:"Wind",   Hindi:"हवा",    Bengali:"বাতাস",  Telugu:"గాలి",
+  Santali:"ᱯᱳᱵᱳᱱ",  Gondi:"𑴦𑴱𑴝𑴢",  Mundari:"ᱯᱳᱵᱳᱱ", Ho:"𑣦𑣱𑣙𑣢", Kurukh:"𑤦𑤙𑤢"},
+{emoji:"🌧️",cat:"Nature",
+  English:"Rain",   Hindi:"बारिश",  Bengali:"বৃষ্টি", Telugu:"వర్షం",
+  Santali:"ᱨᱤᱢ",    Gondi:"𑴤𑴱𑴢𑴢", Mundari:"ᱨᱤᱢ",   Ho:"𑣧𑣤𑣢",  Kurukh:"𑤤𑤙𑤢"},
+// ── HOME (4) ──────────────────────────────────────────────────────
+{emoji:"🏠",cat:"Home",
+  English:"House",  Hindi:"घर",     Bengali:"বাড়ি",  Telugu:"ఇల్లు",
+  Santali:"ᱳᱨᱟ",    Gondi:"𑴕𑴦𑴤𑴝",    Mundari:"ᱳᱨᱟ",   Ho:"𑣕𑣦𑣙",  Kurukh:"𑤕𑤦𑤙"},
+{emoji:"🚪",cat:"Home",
+  English:"Door",   Hindi:"दरवाज़ा",Bengali:"দরজা",   Telugu:"తలుపు",
+  Santali:"ᱫᱟᱲ",    Gondi:"𑴛𑴱𑴤𑴲",Mundari:"ᱫᱟᱲ",   Ho:"𑣛𑣱𑣤𑣲", Kurukh:"𑤛𑤱𑤤𑤲"},
+{emoji:"💧",cat:"Home",
+  English:"Well",   Hindi:"कुआँ",   Bengali:"কূপ",    Telugu:"బావి",
+  Santali:"ᱡᱤᱵᱤᱫ",  Gondi:"𑴬𑴲𑴤𑴛",    Mundari:"ᱡᱤᱵᱤᱫ", Ho:"𑣡𑣤𑣵𑣛", Kurukh:"𑤡𑤤𑤵𑤛"},
+{emoji:"🔦",cat:"Home",
+  English:"Light",  Hindi:"रोशनी",  Bengali:"আলো",    Telugu:"వెలుతురు",
+  Santali:"ᱫᱤᱯᱟ",   Gondi:"𑴛𑴦𑴤𑴝",   Mundari:"ᱫᱤᱯᱟ",  Ho:"𑣛𑣤𑣯𑣙", Kurukh:"𑤛𑤤𑤯𑤙"},
+// ── FAMILY (4) ────────────────────────────────────────────────────
+{emoji:"👩",cat:"Family",
+  English:"Mother", Hindi:"माँ",    Bengali:"মা",     Telugu:"అమ్మ",
+  Santali:"ᱟᱭᱳ",    Gondi:"𑴜𑴝𑴤",     Mundari:"ᱟᱭᱳ",   Ho:"𑣙𑣉𑣲",  Kurukh:"𑤜𑤙𑤤"},
+{emoji:"👨",cat:"Family",
+  English:"Father", Hindi:"पिता",   Bengali:"বাবা",   Telugu:"నాన్న",
+  Santali:"ᱵᱟᱵᱟ",   Gondi:"𑴞𑴝𑴞𑴝",    Mundari:"ᱵᱟᱵᱟ",  Ho:"𑣞𑣙𑣞𑣙", Kurukh:"𑤞𑤙𑤞𑤙"},
+{emoji:"👧",cat:"Family",
+  English:"Sister", Hindi:"बहन",    Bengali:"বোন",    Telugu:"చెల్లి",
+  Santali:"ᱮᱞᱟ",    Gondi:"𑴜𑴦𑴥𑴤",   Mundari:"ᱮᱞᱟ",   Ho:"𑣙𑣯𑣙",  Kurukh:"𑤜𑤦𑤥𑤤"},
+{emoji:"👦",cat:"Family",
+  English:"Brother",Hindi:"भाई",    Bengali:"ভাই",    Telugu:"అన్న",
+  Santali:"ᱵᱟᱭ",    Gondi:"𑴞𑴱𑴤",    Mundari:"ᱵᱟᱭ",   Ho:"𑣞𑣙𑣉",  Kurukh:"𑤞𑤙𑤉"},
+// ── FOOD (5) ──────────────────────────────────────────────────────
+{emoji:"🍚",cat:"Food",
+  English:"Food",   Hindi:"खाना",   Bengali:"খাবার",  Telugu:"తిండి",
+  Santali:"ᱡᱳᱢ",    Gondi:"𑴕𑴝𑴥𑴝",  Mundari:"ᱡᱳᱢ",   Ho:"𑣡𑣲𑣢",  Kurukh:"𑤡𑤲𑤢"},
+{emoji:"🌾",cat:"Food",
+  English:"Rice",   Hindi:"चावल",   Bengali:"চাল",    Telugu:"బియ్యం",
+  Santali:"ᱪᱟᱩᱞ",   Gondi:"𑴪𑴝𑴯𑴞",   Mundari:"ᱪᱟᱩᱞ",  Ho:"𑣩𑣙𑣯𑣞", Kurukh:"𑤩𑤙𑤯𑤞"},
+{emoji:"🥛",cat:"Food",
+  English:"Milk",   Hindi:"दूध",    Bengali:"দুধ",    Telugu:"పాలు",
+  Santali:"ᱫᱩᱫ",    Gondi:"𑴛𑴲𑴛",    Mundari:"ᱫᱩᱫ",   Ho:"𑣛𑣵𑣛",  Kurukh:"𑤛𑤵𑤛"},
+{emoji:"🍯",cat:"Food",
+  English:"Honey",  Hindi:"शहद",    Bengali:"মধু",    Telugu:"తేనె",
+  Santali:"ᱢᱟᱦᱟ",   Gondi:"𑴢𑴦𑴛",   Mundari:"ᱢᱟᱦᱟ",  Ho:"𑣢𑣉𑣦𑣉", Kurukh:"𑤢𑤉𑤦𑤉"},
+{emoji:"🧂",cat:"Food",
+  English:"Salt",   Hindi:"नमक",    Bengali:"লবণ",    Telugu:"ఉప్పు",
+  Santali:"ᱥᱤᱨ",    Gondi:"𑴢𑴦𑴢",     Mundari:"ᱥᱤᱨ",   Ho:"𑣢𑣤𑣧",  Kurukh:"𑤢𑤤𑤧"},
+// ── ANIMALS (6) ───────────────────────────────────────────────────
+{emoji:"🐄",cat:"Animals",
+  English:"Cow",    Hindi:"गाय",    Bengali:"গরু",    Telugu:"ఆవు",
+  Santali:"ᱜᱟᱤ",    Gondi:"𑴕𑴝𑴤",    Mundari:"ᱜᱟᱤ",   Ho:"𑣕𑣙𑣤",  Kurukh:"𑤕𑤙𑤤"},
+{emoji:"🐦",cat:"Animals",
+  English:"Bird",   Hindi:"पक्षी",  Bengali:"পাখি",   Telugu:"పక్షి",
+  Santali:"ᱪᱤᱨᱤᱭᱟ", Gondi:"𑴪𑴤𑴤",  Mundari:"ᱪᱤᱨᱤᱭᱟ",Ho:"𑣩𑣤𑣤",  Kurukh:"𑤩𑤤𑤤"},
+{emoji:"🐟",cat:"Animals",
+  English:"Fish",   Hindi:"मछली",   Bengali:"মাছ",    Telugu:"చేప",
+  Santali:"ᱦᱟᱜᱮᱟ",  Gondi:"𑴦𑴤𑴪",  Mundari:"ᱦᱟᱜᱮᱟ", Ho:"𑣦𑣙𑣜𑣙", Kurukh:"𑤦𑤙𑤜𑤙"},
+{emoji:"🐅",cat:"Animals",
+  English:"Tiger",  Hindi:"बाघ",    Bengali:"বাঘ",    Telugu:"పులి",
+  Santali:"ᱠᱩᱞ",    Gondi:"𑴕𑴝𑴕",   Mundari:"ᱠᱩᱞ",   Ho:"𑣠𑣵𑣞",  Kurukh:"𑤠𑤵𑤞"},
+{emoji:"🐘",cat:"Animals",
+  English:"Elephant",Hindi:"हाथी",  Bengali:"হাতি",   Telugu:"ఏనుగు",
+  Santali:"ᱦᱟᱛᱤ",   Gondi:"𑴦𑴝𑴬𑴤",  Mundari:"ᱦᱟᱛᱤ",  Ho:"𑣦𑣙𑣬𑣤", Kurukh:"𑤦𑤙𑤬𑤤"},
+{emoji:"🐍",cat:"Animals",
+  English:"Snake",  Hindi:"सांप",   Bengali:"সাপ",    Telugu:"పాము",
+  Santali:"ᱥᱟᱢ",    Gondi:"𑴢𑴝𑴢",    Mundari:"ᱥᱟᱢ",   Ho:"𑣢𑣙𑣢",  Kurukh:"𑤢𑤙𑤢"},
+// ── BODY (5) ──────────────────────────────────────────────────────
+{emoji:"👁️",cat:"Body",
+  English:"Eye",    Hindi:"आँख",    Bengali:"চোখ",    Telugu:"కన్ను",
+  Santali:"ᱢᱮᱴ",    Gondi:"𑴢𑴲𑴕",   Mundari:"ᱢᱮᱴ",   Ho:"𑣢𑣲𑣕",  Kurukh:"𑤢𑤲𑤕"},
+{emoji:"🤚",cat:"Body",
+  English:"Hand",   Hindi:"हाथ",    Bengali:"হাত",    Telugu:"చేయి",
+  Santali:"ᱵᱟᱦ",    Gondi:"𑴞𑴝𑴦",   Mundari:"ᱵᱟᱦ",   Ho:"𑣞𑣙𑣦",  Kurukh:"𑤞𑤙𑤦"},
+{emoji:"👂",cat:"Body",
+  English:"Ear",    Hindi:"कान",    Bengali:"কান",    Telugu:"చెవి",
+  Santali:"ᱞᱩᱛᱩᱨ",  Gondi:"𑴞𑴝𑴥",    Mundari:"ᱞᱩᱛᱩᱨ", Ho:"𑣞𑣙𑣥",  Kurukh:"𑤞𑤙𑤥"},
+{emoji:"👅",cat:"Body",
+  English:"Tongue", Hindi:"जीभ",    Bengali:"জিভ",    Telugu:"నాలుక",
+  Santali:"ᱞᱮᱛ",    Gondi:"𑴞𑴱𑴬",   Mundari:"ᱞᱮᱛ",   Ho:"𑣞𑣱𑣬",  Kurukh:"𑤞𑤱𑤬"},
+{emoji:"🦷",cat:"Body",
+  English:"Tooth",  Hindi:"दाँत",   Bengali:"দাঁত",   Telugu:"పన్ను",
+  Santali:"ᱫᱟᱬᱛᱮ",  Gondi:"𑴛𑴝𑴬𑴬",   Mundari:"ᱫᱟᱬᱛᱮ", Ho:"𑣛𑣙𑣬𑣬", Kurukh:"𑤛𑤙𑤬𑤬"},
+// ── PLACES (4) ────────────────────────────────────────────────────
+{emoji:"🛤️",cat:"Places",
+  English:"Road",   Hindi:"सड़क",   Bengali:"রাস্তা", Telugu:"రోడ్డు",
+  Santali:"ᱨᱟᱥ",    Gondi:"𑴤𑴝𑴢",   Mundari:"ᱨᱟᱥ",   Ho:"𑣧𑣙𑣢",  Kurukh:"𑤧𑤙𑤢"},
+{emoji:"🌲",cat:"Places",
+  English:"Forest", Hindi:"जंगल",   Bengali:"জঙ্গল",  Telugu:"అడవి",
+  Santali:"ᱵᱤᱨ",    Gondi:"𑴞𑴤𑴤",  Mundari:"ᱵᱤᱨ",   Ho:"𑣞𑣤𑣧",  Kurukh:"𑤞𑤤𑤧"},
+{emoji:"⛰️",cat:"Places",
+  English:"Mountain",Hindi:"पहाड़",  Bengali:"পাহাড়", Telugu:"కొండ",
+  Santali:"ᱵᱩᱨᱩ",   Gondi:"𑴞𑴲𑴤𑴲",   Mundari:"ᱵᱩᱨᱩ",  Ho:"𑣞𑣵𑣧𑣵", Kurukh:"𑤞𑤵𑤧𑤵"},
+{emoji:"🌾",cat:"Places",
+  English:"Field",  Hindi:"खेत",    Bengali:"মাঠ",    Telugu:"పొలం",
+  Santali:"ᱚᱪᱚ",    Gondi:"𑴝𑴪𑴝",    Mundari:"ᱚᱪᱚ",   Ho:"𑣙𑣩𑣙",  Kurukh:"𑤙𑤩𑤙"},
+];
+
+// ═══════════════════════════════════════════════════════════════════
+// ROMAN maps: tribal-script value → Roman pronunciation (for transliteration)
+// Every word that appears in WORDS is covered for all 5 languages.
+// ═══════════════════════════════════════════════════════════════════
+const ROMAN = {
+  // ── Santali (Ol Chiki) ──────────────────────────────────────────
+  Santali:{
+    "ᱫᱟ":"Daa","ᱥᱤᱝᱤ":"Singi","ᱪᱚᱱᱫᱳ":"Cando","ᱫᱟᱨᱮ":"Dare","ᱱᱟᱫᱤ":"Nadi",
+    "ᱳᱨᱟ":"Ora","ᱟᱭᱳ":"Aayo","ᱵᱟᱵᱟ":"Baba","ᱡᱳᱢ":"Jom","ᱥᱮᱝᱮᱞ":"Sengel",
+    "ᱫᱷᱟᱨᱴᱤ":"Dharti","ᱯᱳᱵᱳᱱ":"Pobon","ᱜᱟᱤ":"Gai","ᱪᱤᱨᱤᱭᱟ":"Chiriya","ᱦᱟᱜᱮᱟ":"Hagea",
+    "ᱢᱮᱴ":"Met","ᱵᱟᱦ":"Bah","ᱨᱤᱢ":"Rim","ᱪᱟᱩᱞ":"Chaul","ᱨᱟᱥ":"Ras",
+    "ᱫᱟᱲ":"Daar","ᱡᱤᱵᱤᱫ":"Jibid","ᱫᱤᱯᱟ":"Dipa","ᱮᱞᱟ":"Ela","ᱵᱟᱭ":"Bai",
+    "ᱫᱩᱫ":"Dud","ᱢᱟᱦᱟ":"Maha","ᱥᱤᱨ":"Sir","ᱠᱩᱞ":"Kul","ᱦᱟᱛᱤ":"Hati",
+    "ᱥᱟᱢ":"Sam","ᱞᱩᱛᱩᱨ":"Lutur","ᱞᱮᱛ":"Let","ᱫᱟᱬᱛᱮ":"Daante","ᱵᱤᱨ":"Bir",
+    "ᱵᱩᱨᱩ":"Buru","ᱚᱪᱚ":"Ocho",
+  },
+  // ── Mundari (Mundari Bani / Ol Chiki shared) ────────────────────
+  Mundari:{
+    "ᱫᱟ":"Daa","ᱥᱤᱝᱤ":"Singi","ᱪᱚᱱᱫᱳ":"Cando","ᱫᱟᱨᱮ":"Dare","ᱱᱟᱫᱤ":"Nadi",
+    "ᱳᱨᱟ":"Ora","ᱟᱭᱳ":"Aayo","ᱵᱟᱵᱟ":"Baba","ᱡᱳᱢ":"Jom","ᱥᱮᱝᱮᱞ":"Sengel",
+    "ᱫᱷᱟᱨᱴᱤ":"Dharti","ᱯᱳᱵᱳᱱ":"Pobon","ᱜᱟᱤ":"Gai","ᱪᱤᱨᱤᱭᱟ":"Chiriya","ᱦᱟᱜᱮᱟ":"Hagea",
+    "ᱢᱮᱴ":"Met","ᱵᱟᱦ":"Bah","ᱨᱤᱢ":"Rim","ᱪᱟᱩᱞ":"Chaul","ᱨᱟᱥ":"Ras",
+    "ᱫᱟᱲ":"Daar","ᱡᱤᱵᱤᱫ":"Jibid","ᱫᱤᱯᱟ":"Dipa","ᱮᱞᱟ":"Ela","ᱵᱟᱭ":"Bai",
+    "ᱫᱩᱫ":"Dud","ᱢᱟᱦᱟ":"Maha","ᱥᱤᱨ":"Sir","ᱠᱩᱞ":"Kul","ᱦᱟᱛᱤ":"Hati",
+    "ᱥᱟᱢ":"Sam","ᱞᱩᱛᱩᱨ":"Lutur","ᱞᱮᱛ":"Let","ᱫᱟᱬᱛᱮ":"Daante","ᱵᱤᱨ":"Bir",
+    "ᱵᱩᱨᱩ":"Buru","ᱚᱪᱚ":"Ocho",
+  },
+  // ── Gondi (Masaram Gondi script) ────────────────────────────────
+  Gondi:{
+    "𑴥𑴧𑴥":"Neer","𑴢𑴲𑴤𑴝𑴤":"Suraj","𑴪𑴝𑴫𑴛":"Chand","𑴛𑴱𑴪𑴤":"Daali",
+    "𑴥𑴘𑴛𑴦":"Nadi","𑴜𑴝𑴕":"Aag","𑴛𑴱𑴤𑴬𑴤":"Dharti","𑴦𑴱𑴝𑴢":"Hawa",
+    "𑴤𑴱𑴢𑴢":"Baras","𑴕𑴦𑴤𑴝":"Gharo","𑴛𑴱𑴤𑴲":"Darwaja","𑴬𑴲𑴤𑴛":"Lapad",
+    "𑴛𑴦𑴤𑴝":"Dipa","𑴜𑴝𑴤":"Aai","𑴞𑴝𑴞𑴝":"Baap","𑴜𑴦𑴥𑴤":"Bahna",
+    "𑴞𑴱𑴤":"Bhai","𑴕𑴝𑴥𑴝":"Khana","𑴪𑴝𑴯𑴞":"Chawal","𑴛𑴲𑴛":"Doodh",
+    "𑴢𑴦𑴛":"Mahad","𑴢𑴦𑴢":"Namak","𑴕𑴝𑴤":"Gai","𑴪𑴤𑴤":"Chiri",
+    "𑴦𑴤𑴪":"Machli","𑴕𑴝𑴕":"Vaagh","𑴦𑴝𑴬𑴤":"Haathi","𑴢𑴝𑴢":"Saap",
+    "𑴢𑴲𑴕":"Aankh","𑴞𑴝𑴦":"Haath","𑴞𑴝𑴥":"Kaan","𑴞𑴱𑴬":"Jib",
+    "𑴛𑴝𑴬𑴬":"Daant","𑴤𑴝𑴢":"Raas","𑴞𑴤𑴤":"Jangal","𑴞𑴲𑴤𑴲":"Pahad",
+    "𑴝𑴪𑴝":"Khet",
+  },
+  // ── Ho (Warang Citi script) ──────────────────────────────────────
+  Ho:{
+    "𑣤𑣉":"Daa","𑣢𑣛𑣑":"Singi","𑣩𑣙𑣛":"Cando","𑣛𑣉𑣧𑣙":"Dare",
+    "𑣧𑣉𑣛𑣤":"Nadi","𑣢𑣙𑣑":"Sengel","𑣛𑣱𑣤𑣬𑣤":"Dharti","𑣦𑣱𑣙𑣢":"Hawa",
+    "𑣧𑣤𑣢":"Rim","𑣕𑣦𑣙":"Ora","𑣛𑣱𑣤𑣲":"Darwaja","𑣡𑣤𑣵𑣛":"Jibid",
+    "𑣛𑣤𑣯𑣙":"Dipa","𑣙𑣉𑣲":"Aayo","𑣞𑣙𑣞𑣙":"Baba","𑣙𑣯𑣙":"Ela",
+    "𑣞𑣙𑣉":"Bai","𑣡𑣲𑣢":"Jom","𑣩𑣙𑣯𑣞":"Chaul","𑣛𑣵𑣛":"Dud",
+    "𑣢𑣉𑣦𑣉":"Maha","𑣢𑣤𑣧":"Sir","𑣕𑣙𑣤":"Gai","𑣩𑣤𑣤":"Chiriya",
+    "𑣦𑣙𑣜𑣙":"Hagea","𑣠𑣵𑣞":"Kul","𑣦𑣙𑣬𑣤":"Hati","𑣢𑣙𑣢":"Sam",
+    "𑣢𑣲𑣕":"Met","𑣞𑣙𑣦":"Bah","𑣞𑣙𑣥":"Lutur","𑣞𑣱𑣬":"Let",
+    "𑣛𑣙𑣬𑣬":"Daante","𑣧𑣙𑣢":"Ras","𑣞𑣤𑣧":"Bir","𑣞𑣵𑣧𑣵":"Buru",
+    "𑣙𑣩𑣙":"Ocho",
+  },
+  // ── Kurukh (Tolong Siki script) ──────────────────────────────────
+  Kurukh:{
+    "𑤯𑤲𑤬":"Jal","𑤢𑤲𑤤𑤪𑤤":"Suruj","𑤩𑤙𑤛":"Chand","𑤛𑤉𑤧𑤙":"Daari",
+    "𑤧𑤙𑤛𑤤":"Nadi","𑤜𑤙𑤕":"Aag","𑤛𑤱𑤤𑤬𑤤":"Dharti","𑤦𑤙𑤢":"Hawa",
+    "𑤤𑤙𑤢":"Barsa","𑤕𑤦𑤙":"Gharo","𑤛𑤱𑤤𑤲":"Darwaja","𑤡𑤤𑤵𑤛":"Jibid",
+    "𑤛𑤤𑤯𑤙":"Dipa","𑤜𑤙𑤤":"Aai","𑤞𑤙𑤞𑤙":"Baap","𑤜𑤦𑤥𑤤":"Bahna",
+    "𑤞𑤙𑤉":"Bhai","𑤡𑤲𑤢":"Khana","𑤩𑤙𑤯𑤞":"Chawal","𑤛𑤵𑤛":"Doodh",
+    "𑤢𑤉𑤦𑤉":"Mahad","𑤢𑤤𑤧":"Namak","𑤕𑤙𑤤":"Gai","𑤩𑤤𑤤":"Chiriya",
+    "𑤦𑤙𑤜𑤙":"Machri","𑤠𑤵𑤞":"Vaagh","𑤦𑤙𑤬𑤤":"Haathi","𑤢𑤙𑤢":"Saap",
+    "𑤢𑤲𑤕":"Aankh","𑤞𑤙𑤦":"Haath","𑤞𑤙𑤥":"Kaan","𑤞𑤱𑤬":"Jib",
+    "𑤛𑤙𑤬𑤬":"Daant","𑤧𑤙𑤢":"Ras","𑤞𑤤𑤧":"Jangal","𑤞𑤵𑤧𑤵":"Pahad",
+    "𑤙𑤩𑤙":"Khet",
+  },
+};
+
+const SCRIPT_CFG = {
+  Santali: {font:"'Noto Sans Ol Chiki',sans-serif",               hasScript:true, romanOf: w => ROMAN.Santali[w] || w},
+  Gondi:   {font:"'Noto Sans Masaram Gondi','Noto Sans',sans-serif",hasScript:true, romanOf: w => ROMAN.Gondi[w]   || w},
+  Mundari: {font:"'Noto Sans Nag Mundari','Noto Sans',sans-serif",  hasScript:true, romanOf: w => ROMAN.Mundari[w] || w},
+  Ho:      {font:"'Noto Sans Warang Citi','Noto Sans',sans-serif",  hasScript:true, romanOf: w => ROMAN.Ho[w]      || w},
+  Kurukh:  {font:"'Noto Sans','Nunito',sans-serif",                 hasScript:true, romanOf: w => ROMAN.Kurukh[w]  || w},
+};
+
+const TRIBAL_INFO = {
+  Santali:{region:"Jharkhand, WB, Odisha",   speakers:"~7 million",   script:"Ol Chiki",      color:"#2d7a4f"},
+  Gondi:  {region:"MP, Maharashtra, CG",     speakers:"~3 million",   script:"Masaram Gondi", color:"#b45309"},
+  Mundari:{region:"Jharkhand, Odisha, WB",   speakers:"~1.1 million", script:"Mundari Bani",  color:"#0369a1"},
+  Ho:     {region:"Jharkhand, Odisha, WB",   speakers:"~1.4 million", script:"Warang Citi",   color:"#065f46"},
+  Kurukh: {region:"Jharkhand, Odisha, CG",   speakers:"~2 million",   script:"Tolong Siki",   color:"#9f1239"},
+};
+
+const CAT_CFG={
+  All:     {icon:"🔤",bg:"#1a4a2e"},
+  Nature:  {icon:"🌿",bg:"#2e7d32"},
+  Home:    {icon:"🏠",bg:"#1565c0"},
+  Family:  {icon:"👨‍👩‍👧",bg:"#6a1b9a"},
+  Food:    {icon:"🍚",bg:"#e65100"},
+  Animals: {icon:"🐾",bg:"#4e342e"},
+  Body:    {icon:"🫀",bg:"#880e4f"},
+  Places:  {icon:"📍",bg:"#00695c"},
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// SCRIPT CHARTS DATA
+// ═══════════════════════════════════════════════════════════════════
+const CHARTS = {
+  oc:{
+    title:"ᱚᱞ ᱪᱤᱠᱤ — Ol Chiki",
+    sub:"Invented by Pandit Raghunath Murmu, 1925 · Official Santali script · 30 letters · Jharkhand, WB & Odisha",
+    bg:"#1a0533",fg:"#e9d5ff",cellBg:"#2d1050",cellBorder:"#6a1b9a",
+    lblCol:"#80cbc4",ipaCol:"#fff9c4",
+    font:"'Noto Sans Ol Chiki',sans-serif",
+    closeCol:"#6a1b9a",
+    chars:[
+      ["LA","ᱚ","a"],["AT","ᱛ","t"],["AG","ᱜ","g"],["ANG","ᱝ","ng"],["AL","ᱞ","l"],
+      ["LAM","ᱟ","aa"],["OV","ᱠ","k"],["OR","ᱡ","j"],["OL","ᱢ","m"],["OM","ᱣ","w"],
+      ["PO","ᱤ","i"],["AM","ᱥ","s"],["PH","ᱦ","h"],["EB","ᱧ","ny"],["YOM","ᱨ","r"],
+      ["DO","ᱩ","u"],["ANG","ᱪ","ch"],["DAM","ᱫ","d"],["ENN","ᱬ","nd"],["OTT","ᱭ","y"],
+      ["EN","ᱮ","e"],["MW","ᱯ","p"],["ER","ᱰ","D"],["EL","ᱱ","n"],["LM","ᱲ","R"],
+      ["AW","ᱳ","o"],["AY","ᱴ","T"],["BM","ᱵ","b"],["OH","ᱶ","v"],["INP","ᱷ","'"],
+    ],
+    exTitle:"📝 Words in Ol Chiki",
+    examples:[
+      {e:"Water",r:"Daa",n:"ᱫᱟ"},{e:"Sun",r:"Singi",n:"ᱥᱤᱝᱤ"},
+      {e:"Moon",r:"Cando",n:"ᱪᱚᱱᱫᱳ"},{e:"Fire",r:"Sengel",n:"ᱥᱮᱝᱮᱞ"},
+      {e:"Mother",r:"Aayo",n:"ᱟᱭᱳ"},{e:"Rice",r:"Chaul",n:"ᱪᱟᱩᱞ"},
+      {e:"Bird",r:"Chiriya",n:"ᱪᱤᱨᱤᱭᱟ"},{e:"House",r:"Ora",n:"ᱳᱨᱟ"},
+    ],
+  },
+  mg:{
+    title:"𑴀 Masaram Gondi",
+    sub:"Ancient script of the Gondi people · Unicode block 11D00–11D5F · MP, Maharashtra, Chhattisgarh",
+    bg:"#1c0a00",fg:"#fde68a",cellBg:"#2d1500",cellBorder:"#b45309",
+    lblCol:"#fbbf24",ipaCol:"#fef3c7",
+    font:"'Noto Sans Masaram Gondi','Noto Sans',serif",
+    closeCol:"#b45309",
+    chars:[
+      ["A","𑴀","a"],["AA","𑴁","aa"],["I","𑴂","i"],["II","𑴃","ii"],["U","𑴄","u"],
+      ["UU","𑴅","uu"],["E","𑴆","e"],["AI","𑴈","ai"],["O","𑴊","o"],["AU","𑴌","au"],
+      ["KA","𑴓","ka"],["KHA","𑴔","kha"],["GA","𑴕","ga"],["GHA","𑴖","gha"],["NGA","𑴗","nga"],
+      ["CA","𑴘","ca"],["CHA","𑴙","cha"],["JA","𑴚","ja"],["JHA","𑴛","jha"],["NYA","𑴜","nya"],
+      ["TTA","𑴝","tta"],["TTHA","𑴞","ttha"],["DDA","𑴟","dda"],["TA","𑴠","ta"],["THA","𑴡","tha"],
+      ["DA","𑴢","da"],["DHA","𑴣","dha"],["NA","𑴤","na"],["PA","𑴥","pa"],["PHA","𑴦","pha"],
+      ["BA","𑴧","ba"],["BHA","𑴨","bha"],["MA","𑴩","ma"],["YA","𑴪","ya"],["RA","𑴫","ra"],
+      ["LA","𑴬","la"],["VA","𑴭","va"],["SHA","𑴮","sha"],["SA","𑴯","sa"],["HA","𑴰","ha"],
+    ],
+    exTitle:"📝 Words in Masaram Gondi",
+    examples:[
+      {e:"Fire",r:"Aag",n:"𑴜𑴝𑴕"},{e:"Sun",r:"Suraj",n:"𑴢𑴲𑴤𑴝𑴤"},
+      {e:"Water",r:"Neer",n:"𑴥𑴧𑴥"},{e:"House",r:"Gharo",n:"𑴕𑴦𑴤𑴝"},
+      {e:"Mother",r:"Aai",n:"𑴜𑴝𑴤"},{e:"Rice",r:"Chawal",n:"𑴪𑴝𑴯𑴞"},
+    ],
+  },
+  mb:{
+    title:"𞓐 Mundari Bani",
+    sub:"Script created by Rohidas Singh Nag for the Mundari language · Unicode block 1E4D0 · Jharkhand, Odisha, WB",
+    bg:"#00172b",fg:"#bae6fd",cellBg:"#002244",cellBorder:"#0369a1",
+    lblCol:"#38bdf8",ipaCol:"#e0f2fe",
+    font:"'Noto Sans Nag Mundari','Noto Sans',sans-serif",
+    closeCol:"#0369a1",
+    chars:[
+      ["A","𞓐","a"],["AA","𞓑","aa"],["I","𞓒","i"],["II","𞓓","ii"],["U","𞓔","u"],
+      ["E","𞓕","e"],["O","𞓖","o"],["KA","𞓗","k"],["NGA","𞓘","ng"],["CA","𞓙","c"],
+      ["JA","𞓚","j"],["NYA","𞓛","ny"],["TA","𞓜","t"],["DA","𞓝","d"],["NA","𞓞","n"],
+      ["PA","𞓟","p"],["BA","𞓠","b"],["MA","𞓡","m"],["LA","𞓢","l"],["RA","𞓣","r"],
+      ["SA","𞓤","s"],["HA","𞓥","h"],
+    ],
+    exTitle:"📝 Words in Mundari Bani",
+    examples:[
+      {e:"Water",r:"Daa",n:"𞓝𞓐"},{e:"Sun",r:"Singi",n:"𞓤𞓒𞓘𞓒"},
+      {e:"Fire",r:"Sengel",n:"𞓤𞓕𞓘𞓕𞓢"},{e:"House",r:"Ora",n:"𞓖𞓣𞓐"},
+      {e:"Fish",r:"Hagea",n:"𞓥𞓐𞓚𞓐"},{e:"Bird",r:"Chiriya",n:"𞓙𞓒𞓣𞓒𞓬𞓐"},
+    ],
+  },
+  wc:{
+    title:"𑢠 Warang Citi",
+    sub:"Created by Lako Bodra for the Ho language · Unicode block 118A0–118FF · Jharkhand, Odisha, WB",
+    bg:"#001a10",fg:"#6ee7b7",cellBg:"#002211",cellBorder:"#065f46",
+    lblCol:"#34d399",ipaCol:"#d1fae5",
+    font:"'Noto Sans Warang Citi','Noto Sans',sans-serif",
+    closeCol:"#065f46",
+    chars:[
+      ["NGAA","𑢠","ngaa"],["A","𑢡","a"],["WI","𑢢","wi"],["II","𑢣","ii"],["U","𑢤","u"],
+      ["YUJ","𑢥","yuj"],["UC","𑢦","uc"],["EE","𑢧","ee"],["OMAA","𑢨","omaa"],["AI","𑢩","ai"],
+      ["AA","𑢪","aa"],["ONTO","𑢫","onto"],["TECH","𑢬","tech"],["OO","𑢭","oo"],["AAN","𑢮","aan"],
+      ["KOUU","𑢯","kouu"],["ENAE","𑢰","enae"],["KAA","𑢱","kaa"],["DEUU","𑢲","deuu"],["NUI","𑢳","nui"],
+      ["DAA","𑢴","daa"],["TTE","𑢵","tte"],["NUU","𑢶","nuu"],["PO","𑢷","po"],["B","𑢸","b"],
+      ["BUGUU","𑢹","buguu"],["GE","𑢺","ge"],["MEE","𑢻","mee"],["YO","𑢼","yo"],["DE","𑢽","de"],
+      ["HUUN","𑢾","huun"],["LAV","𑢿","lav"],
+    ],
+    exTitle:"📝 Words in Warang Citi",
+    examples:[
+      {e:"Water",r:"Daa",n:"𑣤𑣉"},{e:"Sun",r:"Singi",n:"𑣢𑣛𑣑"},
+      {e:"Moon",r:"Cando",n:"𑣩𑣙𑣛"},{e:"Mother",r:"Aayo",n:"𑣙𑣉𑣲"},
+      {e:"Fish",r:"Hagea",n:"𑣦𑣙𑣜𑣙"},{e:"Forest",r:"Bir",n:"𑣞𑣤𑣧"},
+    ],
+  },
+  ts:{
+    title:"𑴀 Tolong Siki",
+    sub:"Script created by Narayan Oraon for the Kurukh language · Used in Jharkhand, Odisha & Chhattisgarh",
+    bg:"#1f0010",fg:"#fda4af",cellBg:"#2d0015",cellBorder:"#9f1239",
+    lblCol:"#fb7185",ipaCol:"#fee2e2",
+    font:"'Noto Sans','Nunito',sans-serif",
+    closeCol:"#9f1239",
+    chars:[
+      ["KA","𑤊","k"],["KHA","𑤋","kh"],["GA","𑤌","g"],["GHA","𑤍","gh"],["NGA","𑤎","ng"],
+      ["CA","𑤏","c"],["CHA","𑤐","ch"],["JA","𑤑","j"],["JHA","𑤒","jh"],["NYA","𑤓","ny"],
+      ["TTA","𑤔","ṭ"],["TTHA","𑤕","ṭh"],["DDA","𑤖","ḍ"],["DDHA","𑤗","ḍh"],["NNA","𑤘","ṇ"],
+      ["TA","𑤙","t"],["THA","𑤚","th"],["DA","𑤛","d"],["DHA","𑤜","dh"],["NA","𑤝","n"],
+      ["PA","𑤞","p"],["PHA","𑤟","ph"],["BA","𑤠","b"],["BHA","𑤡","bh"],["MA","𑤢","m"],
+      ["YA","𑤣","y"],["RA","𑤤","r"],["LA","𑤥","l"],["VA","𑤦","v"],["SA","𑤧","s"],
+      ["HA","𑤨","h"],
+    ],
+    exTitle:"📝 Words in Tolong Siki",
+    examples:[
+      {e:"Water",r:"Jal",n:"𑤯𑤲𑤬"},{e:"Sun",r:"Suruj",n:"𑤢𑤲𑤤𑤪𑤤"},
+      {e:"Fire",r:"Aag",n:"𑤜𑤙𑤕"},{e:"Mother",r:"Aai",n:"𑤜𑤙𑤤"},
+      {e:"Forest",r:"Bir",n:"𑤞𑤤𑤧"},{e:"Snake",r:"Saam",n:"𑤢𑤙𑤢"},
+    ],
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════
+let activeCat="All", filtered=[...WORDS], idx=0, score=0, totalSeen=0, quizAnswer="", quizAnswerRoman="";
+
+// ═══════════════════════════════════════════════════════════════════
+// HELPERS: TRANSLIT, romanToScript, openChart, closeOverlay, shuffle
+// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+// ROMAN → SOURCE SCRIPT TRANSLITERATION
+// Converts a Roman-transliterated tribal word into the user's known script
+// so e.g. "Cando" → "चन्दो" (Hindi) / "চান্দো" (Bengali) / "చాందో" (Telugu)
+// Strategy: map common Roman syllables longest-first into target script syllables
+// ═══════════════════════════════════════════════════════════════════
+
+const TRANSLIT = {
+  Hindi: [
+    // tri/quad-grams first
+    ["chh","च्छ"],["tth","त्थ"],["ddh","द्ध"],
+    // diagraphs — order matters: longer before shorter
+    ["Ch","च"],["ch","च"],["Sh","ष"],["sh","श"],["ph","फ"],["bh","भ"],
+    ["gh","घ"],["jh","झ"],["kh","ख"],["th","थ"],["dh","ध"],
+    ["ng","ङ्ग"],["ny","ञ"],["nd","न्द"],["nt","न्त"],["nk","न्क"],
+    // long vowels (must come BEFORE their short forms)
+    ["aa","ा"],["ii","ी"],["uu","ू"],["ee","ी"],["oo","ू"],
+    ["au","ौ"],["ai","ै"],["Aa","आ"],
+    // standalone vowels (word-initial — handled by matra logic below)
+    ["A","आ"],["a","अ"],["I","ई"],["i","ि"],["U","ऊ"],["u","ु"],["e","े"],["o","ो"],
+    // consonants
+    ["k","क"],["g","ग"],["c","च"],["j","ज"],["t","त"],["d","द"],["n","न"],
+    ["p","प"],["b","ब"],["m","म"],["y","य"],["r","र"],["l","ल"],
+    ["v","व"],["w","व"],["s","स"],["h","ह"],
+    ["D","ड"],["G","ग"],["B","ब"],["R","र"],["L","ल"],
+  ],
+  Bengali: [
+    ["chh","চ্ছ"],["tth","ত্থ"],
+    ["Ch","চ"],["ch","চ"],["Sh","ষ"],["sh","শ"],["ph","ফ"],["bh","ভ"],
+    ["gh","ঘ"],["jh","ঝ"],["kh","খ"],["th","থ"],["dh","ধ"],
+    ["ng","ঙ্গ"],["ny","ঞ"],["nd","ন্দ"],["nt","ন্ত"],["nk","ন্ক"],
+    ["aa","া"],["ii","ী"],["uu","ূ"],["ee","ী"],["oo","ূ"],["au","ৌ"],["ai","ৈ"],
+    ["A","আ"],["a","অ"],["I","ঈ"],["i","ি"],["U","ঊ"],["u","ু"],["e","ে"],["o","ো"],
+    ["k","ক"],["g","গ"],["c","চ"],["j","জ"],["t","ত"],["d","দ"],["n","ন"],
+    ["p","প"],["b","ব"],["m","ম"],["y","য"],["r","র"],["l","ল"],
+    ["v","ভ"],["w","ও"],["s","স"],["h","হ"],
+    ["D","ড"],["G","গ"],["B","ব"],["R","র"],["L","ল"],
+  ],
+  Telugu: [
+    ["chh","చ్ఛ"],["tth","త్థ"],
+    ["Ch","చ"],["ch","చ"],["Sh","ష"],["sh","శ"],["ph","ఫ"],["bh","భ"],
+    ["gh","ఘ"],["jh","ఝ"],["kh","ఖ"],["th","థ"],["dh","ధ"],
+    ["ng","ఙ"],["ny","ఞ"],["nd","న్డ"],["nt","న్త"],["nk","న్క"],
+    ["aa","ా"],["ii","ీ"],["uu","ూ"],["ee","ీ"],["oo","ూ"],["au","ౌ"],["ai","ై"],
+    ["A","ఆ"],["a","అ"],["I","ఈ"],["i","ి"],["U","ఊ"],["u","ు"],["e","ే"],["o","ో"],
+    ["k","క"],["g","గ"],["c","చ"],["j","జ"],["t","త"],["d","ద"],["n","న"],
+    ["p","ప"],["b","బ"],["m","మ"],["y","య"],["r","ర"],["l","ల"],
+    ["v","వ"],["w","వ"],["s","స"],["h","హ"],
+    ["D","డ"],["G","గ"],["B","బ"],["R","ర"],["L","ల"],
+  ],
+};
+
+// Syllabifies Roman string and maps to target script with correct matra logic
+function romanToScript(roman, srcLang) {
+  if (!roman || srcLang === "English") return roman;
+  const rules = TRANSLIT[srcLang];
+  if (!rules) return roman;
+  const str = roman.trim().toLowerCase();
+
+  // Step 1: tokenise on lowercased string (rules are all lowercase except digraph capitals like Ch→but we lowercased so ch matches)
+  const tokens = [];
+  let i = 0;
+  while (i < str.length) {
+    let matched = false;
+    for (const [rom, scr] of rules) {
+      if (str.substr(i, rom.length) === rom) {
+        tokens.push(scr); i += rom.length; matched = true; break;
+      }
+    }
+    if (!matched) { tokens.push(str[i]); i++; }
+  }
+
+  // Step 2: consonant regex per language
+  const CONS = {
+    Hindi:   /^(?:न्द|न्त|न्क|ङ्ग|[कखगघङचछजझञटठडढणतथदधनपफबभमयरलवशषसह])$/,
+    Bengali: /^(?:ন্দ|ন্ত|ন্ক|ঙ্গ|[কখগঘঙচছজঝঞটঠডঢণতথদধনপফবভমযরলশষসহ])$/,
+    Telugu:  /^(?:న్డ|న్త|న్క|[కఖగఘఙచఛజఝఞటఠడఢణతథదధనపఫబభమయరలవశషసహ])$/,
+  };
+  // matra to attach after consonant
+  const MATRA = {
+    Hindi:   {"अ":"ा","आ":"ा","इ":"ि","ई":"ी","उ":"ु","ऊ":"ू","ए":"े","ओ":"ो","ऐ":"ै","औ":"ौ",
+               "ा":"ा","ि":"ि","ी":"ी","ु":"ु","ू":"ू","े":"े","ो":"ो","ै":"ै","ौ":"ौ"},
+    Bengali: {"অ":"া","আ":"া","ই":"ি","ঈ":"ী","উ":"ু","ঊ":"ূ","এ":"ে","ও":"ো","ঐ":"ৈ","ঔ":"ৌ",
+               "া":"া","ি":"ি","ী":"ী","ু":"ু","ূ":"ূ","ে":"ে","ো":"ো","ৈ":"ৈ","ৌ":"ৌ"},
+    Telugu:  {"అ":"ా","ఆ":"ా","ఇ":"ి","ఈ":"ీ","ఉ":"ు","ఊ":"ూ","ఎ":"ే","ఒ":"ో","ఐ":"ై","ఔ":"ౌ",
+               "ా":"ా","ి":"ి","ీ":"ీ","ు":"ు","ూ":"ూ","ే":"ే","ో":"ో","ై":"ై","ౌ":"ౌ"},
+  };
+  // standalone vowel form when NOT after a consonant
+  const STANDALONE = {
+    Hindi:   {"ा":"आ","ि":"इ","ी":"ई","ु":"उ","ू":"ऊ","े":"ए","ो":"ओ","ै":"ऐ","ौ":"औ"},
+    Bengali: {"া":"আ","ি":"ই","ী":"ঈ","ু":"উ","ূ":"ঊ","ে":"এ","ো":"ও","ৈ":"ঐ","ৌ":"ঔ"},
+    Telugu:  {"ా":"ఆ","ి":"ఇ","ీ":"ఈ","ు":"ఉ","ూ":"ఊ","ే":"ఎ","ో":"ఒ","ై":"ఐ","ౌ":"ఔ"},
+  };
+
+  const consRe = CONS[srcLang];
+  const mMap   = MATRA[srcLang]      || {};
+  const sMap   = STANDALONE[srcLang] || {};
+
+  // Step 3: assemble
+  let out = "";
+  let lastCons = false;
+  for (const s of tokens) {
+    const isCons = consRe ? consRe.test(s) : false;
+    if (lastCons && s in mMap) {
+      out += mMap[s];     // "" = inherent-a (consume silently), else matra
+      lastCons = false;
+    } else if (!lastCons && s in sMap) {
+      out += sMap[s];     // standalone vowel form (word-initial or after vowel)
+      lastCons = false;
+    } else {
+      out += s;
+      lastCons = isCons;
+    }
+  }
+  return out || roman;
+}
+// ═══════════════════════════════════════════════════════════════════
+// SCRIPT CHART MODAL — source-language aware
+// ═══════════════════════════════════════════════════════════════════
+function openChart(key){
+  window._lastChartKey=key;
+  const c=CHARTS[key];if(!c)return;
+  const src=document.getElementById("srcLang").value;
+  const modal=document.getElementById("cModal");
+  modal.style.background=c.bg;modal.style.color=c.fg;
+  document.getElementById("cTitle").textContent=c.title;document.getElementById("cTitle").style.color=c.fg;
+  document.getElementById("cSub").textContent=c.sub;
+  const grid=document.getElementById("cGrid");grid.innerHTML="";
+  c.chars.forEach(([name,char,ipa])=>{
+    // ipa is a Roman sound hint — transliterate into user's source script
+    const ipaInSrc = romanToScript(ipa, src);
+    grid.innerHTML+=`<div class="ccell" style="background:${c.cellBg};border:1px solid ${c.cellBorder}">
+      <div class="cc-char" style="font-family:${c.font};color:${c.fg}">${char}</div>
+      <div class="cc-name" style="color:${c.lblCol}">${name}</div>
+      <div class="cc-ipa"  style="color:${c.ipaCol}">${ipaInSrc}</div></div>`;
+  });
+  document.getElementById("cExTitle").textContent=c.exTitle;document.getElementById("cExTitle").style.color=c.fg;
+  const exg=document.getElementById("cExGrid");exg.innerHTML="";
+  c.examples.forEach(({e,r,n})=>{
+    // r = Roman pronunciation of the tribal word — transliterate into user's script
+    const rInSrc = romanToScript(r, src);
+    const wObj=WORDS.find(w=>w.English===e);
+    const srcEquiv=wObj?(wObj[src]||e):e;
+    exg.innerHTML+=`<div class="cex-card" style="background:${c.cellBg};border:1px solid ${c.cellBorder}">
+      <div class="cex-eng" style="color:${c.lblCol};font-size:11px;font-weight:800">${srcEquiv}</div>
+      <div class="cex-native" style="font-family:${c.font};color:${c.fg};font-size:22px;margin-top:4px">${n}</div>
+      <div class="cex-rom" style="color:${c.ipaCol};font-size:12px;margin-top:2px">${rInSrc}</div></div>`;
+  });
+  const cb=document.getElementById("cCloseBtn");
+  cb.style.background=c.closeCol;cb.style.color="#fff";cb.style.fontFamily="'Nunito',sans-serif";
+  document.getElementById("chartOverlay").classList.add("on");
+}
+
+function closeOverlay(id){document.getElementById(id).classList.remove("on");}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+
+// ═══════════════════════════════════════════════════════════════════
+// PANEL STATE
+// ═══════════════════════════════════════════════════════════════════
+let panelOpen = false;
+
+function togglePanel(forceOpen) {
+  panelOpen = forceOpen !== undefined ? forceOpen : !panelOpen;
+  document.getElementById("mainArea").classList.toggle("panel-open", panelOpen);
+  const btn = document.getElementById("quizToggleBtn");
+  btn.classList.toggle("active-quiz", panelOpen);
+  btn.textContent = panelOpen ? "✕ Close Panel" : "❓ Quiz Me!";
+  if (panelOpen) startQuiz();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════
+function init() {
+  buildCatPills();
+  buildCatLegend();
+  document.getElementById("progTotal").textContent = "Total: " + WORDS.length;
+  document.getElementById("srcLang").addEventListener("change", () => {
+    showWord();
+    if (window._lastChartKey && document.getElementById("chartOverlay").classList.contains("on")) {
+      openChart(window._lastChartKey);
+    }
+  });
+  document.getElementById("tribLang").addEventListener("change", () => { showWord(); updateInfo(); });
+  applyFilter("All");
+}
+
+function buildCatPills() {
+  const row = document.getElementById("catRow");
+  row.innerHTML = "";
+  ["All", ...new Set(WORDS.map(w => w.cat))].forEach(cat => {
+    const cfg = CAT_CFG[cat] || { icon: "", bg: "#555" };
+    const btn = document.createElement("button");
+    btn.className = "cpill" + (cat === activeCat ? " active" : "");
+    btn.textContent = cfg.icon + " " + cat;
+    if (cat === activeCat) { btn.style.background = cfg.bg; btn.style.color = "#fff"; }
+    btn.onclick = () => applyFilter(cat);
+    row.appendChild(btn);
+  });
+}
+
+function buildCatLegend() {
+  document.getElementById("catLegend").innerHTML =
+    Object.entries(CAT_CFG).filter(([k]) => k !== "All")
+      .map(([cat, c]) =>
+        '<div class="legend-item"><span class="legend-dot" style="background:' + c.bg + '"></span>' +
+        c.icon + ' ' + cat + '</div>'
+      ).join("");
+}
+
+function applyFilter(cat) {
+  activeCat = cat;
+  filtered = cat === "All" ? [...WORDS] : WORDS.filter(w => w.cat === cat);
+  idx = 0;
+  document.querySelectorAll(".cpill").forEach(btn => {
+    const label = btn.textContent.trim();
+    const c = ["All", ...new Set(WORDS.map(w => w.cat))].find(x => label.includes(x));
+    const cfg = CAT_CFG[c] || { bg: "#555" };
+    if (c === activeCat) {
+      btn.classList.add("active");
+      btn.style.background = cfg.bg;
+      btn.style.color = "#fff";
+      btn.style.boxShadow = "0 4px 14px " + cfg.bg + "55";
+    } else {
+      btn.classList.remove("active");
+      btn.style.background = "";
+      btn.style.color = "";
+      btn.style.boxShadow = "";
+    }
+  });
+  showWord();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SHOW WORD
+// ═══════════════════════════════════════════════════════════════════
+function showWord(anim) {
+  if (anim === undefined) anim = true;
+  if (!filtered.length) return;
+  idx = ((idx % filtered.length) + filtered.length) % filtered.length;
+  const w = filtered[idx];
+  const src = document.getElementById("srcLang").value;
+  const trib = document.getElementById("tribLang").value;
+  const catCfg = CAT_CFG[w.cat] || { icon: "", bg: "#555" };
+  const info = TRIBAL_INFO[trib] || {};
+  const scfg = SCRIPT_CFG[trib] || { hasScript: true, font: "'Nunito',sans-serif", romanOf: function(x){ return x; } };
+
+  if (anim) {
+    const c = document.getElementById("wordCard");
+    c.classList.remove("flip-enter");
+    void c.offsetWidth;
+    c.classList.add("flip-enter");
+  }
+
+  document.getElementById("catTag").textContent = catCfg.icon + " " + w.cat;
+  document.getElementById("catTag").style.background = catCfg.bg;
+  document.getElementById("progTxt").textContent = "Word " + (idx + 1) + " of " + filtered.length;
+
+  const em = document.getElementById("wordEmoji");
+  em.textContent = w.emoji;
+  em.style.animation = "none";
+  void em.offsetWidth;
+  em.style.animation = "";
+
+  document.getElementById("srcWord").textContent = w[src] || w.English;
+  document.getElementById("langTag").textContent = "in " + trib;
+
+  const tribVal = w[trib] || "—";
+  const romanVal = scfg.romanOf(tribVal);
+  const translit = romanToScript(romanVal, src);
+
+  document.getElementById("nativeDisplay").innerHTML =
+    '<div class="native-big" style="font-family:' + scfg.font + ';color:' + (info.color || "#2d7a4f") + '">' + tribVal + '</div>' +
+    '<div class="roman-small" style="font-style:normal">' + translit + '</div>';
+
+  totalSeen = Math.max(totalSeen, idx + 1);
+  document.getElementById("pbar").style.width = Math.round((totalSeen / WORDS.length) * 100) + "%";
+  document.getElementById("progSeen").textContent = "Seen: " + totalSeen;
+  updateInfo();
+
+  if (panelOpen) startQuiz();
+}
+
+function updateInfo() {
+  const trib = document.getElementById("tribLang").value;
+  const info = TRIBAL_INFO[trib] || {};
+  document.getElementById("infoRows").innerHTML =
+    '<div class="info-item">🏷️ <span>' + trib + '</span></div>' +
+    '<div class="info-item" style="margin-top:3px">📍 ' + (info.region || "—") + '</div>' +
+    '<div class="info-item" style="margin-top:3px">👥 <span>' + (info.speakers || "—") + '</span></div>' +
+    '<div class="info-item" style="margin-top:3px">✍️ <span>' + (info.script || "—") + '</span></div>';
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════════
+function navigate(dir) {
+  idx = (idx + dir + filtered.length) % filtered.length;
+  showWord();
+}
+function randomWord() {
+  if (filtered.length) { idx = Math.floor(Math.random() * filtered.length); showWord(); }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// QUIZ (inside side panel)
+// ═══════════════════════════════════════════════════════════════════
+function startQuiz() {
+  if (!filtered.length) return;
+  const w = filtered[idx];
+  const src = document.getElementById("srcLang").value;
+  const trib = document.getElementById("tribLang").value;
+  const scfg = SCRIPT_CFG[trib] || { font: "'Nunito',sans-serif", romanOf: function(x){ return x; } };
+
+  const quizAnswer = w[trib] || "—";
+
+  document.getElementById("qQuestion").textContent = 'What is "' + (w[src] || w.English) + '" in ' + trib + '?';
+  document.getElementById("qEmoji").textContent = w.emoji;
+  document.getElementById("qResult").textContent = "";
+  document.getElementById("qResult").className = "qresult";
+  document.getElementById("qActions").style.display = "none";
+
+  const pool = WORDS.filter(function(x){ return x !== w && x[trib] && x[trib] !== "—"; });
+  shuffle(pool);
+  const opts = [quizAnswer, pool[0] && pool[0][trib], pool[1] && pool[1][trib], pool[2] && pool[2][trib]]
+    .filter(Boolean);
+  shuffle(opts);
+
+  const div = document.getElementById("qOpts");
+  div.innerHTML = "";
+  opts.forEach(function(opt) {
+    const roman = scfg.romanOf(opt);
+    const sub = romanToScript(roman, src);
+    const btn = document.createElement("button");
+    btn.className = "qopt";
+    btn.innerHTML =
+      '<span class="qopt-native" style="font-family:' + scfg.font + '">' + opt + '</span>' +
+      '<span class="qopt-roman">' + sub + '</span>';
+    btn.onclick = function(){ checkAnswer(opt, quizAnswer, scfg, src, trib); };
+    div.appendChild(btn);
+  });
+}
+
+function checkAnswer(chosen, quizAnswer, scfg, src, trib) {
+  const answerInSrc = romanToScript(scfg.romanOf(quizAnswer), src);
+
+  document.querySelectorAll(".qopt").forEach(function(b) {
+    b.disabled = true;
+    const nat = b.querySelector(".qopt-native");
+    const v = nat ? nat.textContent : b.textContent;
+    if (v === quizAnswer) b.classList.add("correct");
+    else if (v === chosen) b.classList.add("wrong");
+  });
+
+  const res = document.getElementById("qResult");
+  if (chosen === quizAnswer) {
+    score++;
+    document.getElementById("scoreNum").textContent = score;
+    document.getElementById("scoreSub").textContent = score >= 10 ? "Amazing! 🎉" : score >= 5 ? "Great job! 🌟" : "Keep going!";
+    res.textContent = "✅ Correct!";
+    res.className = "qresult win";
+  } else {
+    res.innerHTML = '❌ <span style="font-family:' + scfg.font + '">' + quizAnswer + '</span> · ' + answerInSrc;
+    res.className = "qresult lose";
+  }
+  document.getElementById("qActions").style.display = "flex";
+}
+
+function quizNext() {
+  navigate(1);
+  // showWord() calls startQuiz() when panel is open
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// EVENT LISTENERS
+// ═══════════════════════════════════════════════════════════════════
+document.querySelectorAll(".overlay").forEach(function(o) {
+  o.addEventListener("click", function(e) { if (e.target === o) o.classList.remove("on"); });
+});
+document.addEventListener("keydown", function(e) {
+  if (e.key === "ArrowRight") navigate(1);
+  if (e.key === "ArrowLeft")  navigate(-1);
+  if (e.key === "Escape") {
+    document.querySelectorAll(".overlay").forEach(function(m){ m.classList.remove("on"); });
+    if (panelOpen) togglePanel(false);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// SPLASH → APP REVEAL
+// ═══════════════════════════════════════════════════════════════════
+(function lockScroll(){
+  // Prevent scrolling while splash is shown
+  document.body.style.overflow = 'hidden';
+})();
+
+function launchApp() {
+  var splash = document.getElementById('splash');
+
+  // 1. Open curtains
+  splash.classList.add('open');
+
+  // 2. After curtains are fully open, fade the whole splash out
+  setTimeout(function() {
+    splash.classList.add('hiding');
+  }, 900);
+
+  // 3. Remove from DOM and unlock scroll
+  setTimeout(function() {
+    splash.parentNode && splash.parentNode.removeChild(splash);
+    document.body.style.overflow = '';
+  }, 1620);
+}
+
+init();
+</script>
+</body>
+</html>
